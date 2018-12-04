@@ -206,7 +206,7 @@ function getTimeFilterOptions() {
 }
 .subreddit {
   height: 100%;
-  width: 300px;
+  width: 100%;
 }
 </style>
 
