@@ -1,13 +1,15 @@
 {
-  "name": "vue-reddit-client",
+  "name": "vuereddit",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --target lib --name vuereddit ./src/components/Subreddit.vue",
+    "start": "npm run build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "javascript-time-ago": "^1.0.33",
     "vue": "^2.5.17"
   },
   "devDependencies": {
@@ -17,8 +19,11 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2",
     "vue-template-compiler": "^2.5.17"
   },
+  "main": "dist/vuereddit.umd.js",
   "eslintConfig": {
     "root": true,
     "env": {

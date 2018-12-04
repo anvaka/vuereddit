@@ -1,28 +1,44 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <form action="" @submit.prevent="subredditName = inputModel">
+      <input type="text" v-model='inputModel'>
+    </form>
+    <subreddit :name='subredditName' class='right-aligned'></subreddit>
+    <subreddit name='javascript'></subreddit>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
+import Subreddit from './components/Subreddit'
 
 export default {
-  name: 'app',
+  name: 'App',
+  data() {
+    const subredditName = 'programming';
+    return {
+      subredditName,
+      inputModel: subredditName,
+    };
+  },
+
   components: {
-    HelloWorld
+    Subreddit
   }
 }
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.right-aligned {
+  position: absolute;
+  right: 0;
+  width: 300px;
+  top: 0;
+  bottom: 0;
 }
 </style>

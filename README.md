@@ -1,29 +1,36 @@
-# vue-reddit-client
+# vuereddit
 
-## Project setup
-```
-npm install
-```
+A simple reddit client written as a vue component.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Usage 
 
-### Compiles and minifies for production
+Install the module first:
+
 ```
-npm run build
+npm install vue-reddit-client
 ```
 
-### Run your tests
-```
-npm run test
+And use it in your vue application:
+
+``` vue
+<template>
+  <subreddit name='javascript'></subreddit>
+</template>
+
+<script>
+
+import 'vue-reddit-client/dist/vuereddit.css'
+import Subreddit from 'vue-reddit-client'
+
+export default {
+  name: 'App',
+  components: {
+    Subreddit
+  }
+}
+</script>
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
+## License
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+MIT
