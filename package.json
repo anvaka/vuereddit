@@ -1,6 +1,7 @@
 {
   "name": "vuereddit",
   "version": "0.1.0",
+  "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --target lib --name vuereddit ./src/components/Subreddit.vue",

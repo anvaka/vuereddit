@@ -2,7 +2,9 @@
 
 A simple reddit client written as a vue component.
 
-![demo](https://i.imgur.com/pmktzzg.gif)
+[![demo](https://i.imgur.com/pmktzzg.gif)](https://anvaka.github.io/vuereddit/)
+
+https://anvaka.github.io/vuereddit/
 
 ## Usage 
 
