@@ -2,6 +2,8 @@
 
 A simple reddit client written as a vue component.
 
+![demo](https://i.imgur.com/pmktzzg.gif)
+
 ## Usage 
 
 Install the module first:
@@ -18,7 +20,6 @@ And use it in your vue application:
 </template>
 
 <script>
-
 import 'vue-reddit-client/dist/vuereddit.css'
 import Subreddit from 'vue-reddit-client'
 
@@ -37,7 +38,7 @@ This should give you a very simple reddit viewer:
 
 ## Why?
 
-I love reddit, obviously. I also want to build more tools on top of reddit, so I decide
+I love reddit, obviously. I also want to build more tools on top of reddit, so I decided
 to make this preview component.
 
 Stay tuned for more.
