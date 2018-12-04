@@ -9,7 +9,7 @@ A simple reddit client written as a vue component.
 Install the module first:
 
 ```
-npm install vue-reddit-client
+npm install vuereddit
 ```
 
 And use it in your vue application:
@@ -20,8 +20,8 @@ And use it in your vue application:
 </template>
 
 <script>
-import 'vue-reddit-client/dist/vuereddit.css'
-import Subreddit from 'vue-reddit-client'
+import 'vuereddit/dist/vuereddit.css'
+import Subreddit from 'vuereddit'
 
 export default {
   name: 'App',
@@ -45,7 +45,7 @@ Stay tuned for more.
 
 In the mean time I have also recorded development of this library on video. The total time spent
 here was around 7 hours. I compressed each session to a 30-60 seconds video, where lots of 
-screens are flashing, except maybe last 15 seconds, where final result of work is visible.
+screens are flashing, except maybe last 15 seconds, where the final result of work is visible.
 
 I hope you find it entertaining. Here is a [YouTube playlist](https://www.youtube.com/playlist?list=PLiyBhz6G0njLd-nOcQvbzhssGI5Dy6Vjm)
 
