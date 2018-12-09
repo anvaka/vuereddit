@@ -1,7 +1,7 @@
 <template>
   <div class='subreddit' @scroll='updateVisibility'>
     <div class='title-area'>
-      <h3><a :href="subLink">/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers | {{activeCount}} online</span></h3>
+      <h3><a :href="subLink">/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
     </div>
     <div class='controls'>
       <span class='sort-label'>SORT:</span>
@@ -12,7 +12,7 @@
         <option v-for='(timeOption, index) in timeFilterOptions' :key='index' :value='timeOption.value'>{{timeOption.display}}</option>
       </select>
     </div>
-    <div v-if='loading'>Loading...</div>
+    <div v-if='loading' class='loading'>Loading...</div>
     <div v-if='!loading && details && !details.error' class='details-container'>
       <post v-for='child in details.result.data.children' :key='child.data.id' :vm='child.data'></post>
     </div>
@@ -102,8 +102,8 @@ export default {
       this.details = subredditDetails;
       this.loading = false;
     },
-    updateAbout(about) {
-      this.about = about.data;
+    updateAbout(response) {
+      this.about = response.result.data;
     },
     updateStyle() {
       if (this.$el.clientWidth < 600) {
@@ -207,6 +207,9 @@ function getTimeFilterOptions() {
 .subreddit {
   height: 100%;
   width: 100%;
+}
+.loading {
+  margin-left: 8px;
 }
 </style>
 
