@@ -2,20 +2,12 @@
  * Converts a number into shorter version (1,000 - 1k)
  */
 export default function abbreviateNumber(value) {
-    var newValue = value;
-    if (value >= 1000) {
-        var suffixes = ['', 'k', 'm', 'b', 't'];
-        var suffixNum = Math.floor( (""+value).length/3 );
-        var shortValue = '';
-        for (var precision = 2; precision >= 1; precision--) {
-            shortValue = parseFloat( (suffixNum != 0 ? (value / Math.pow(1000, suffixNum)) : value).toPrecision(precision));
-            var dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g, '');
+    if (value < 1000) return value;
 
-            if (dotLessShortValue.length <= 2) break;
-        }
-
-        if (shortValue % 1 != 0)  shortValue = shortValue.toFixed(1);
-        newValue = shortValue + suffixes[suffixNum];
-    }
-    return newValue;
+    let exponent = Math.floor(Math.floor(Math.log10(value))/3);
+    let power = Math.pow(1000, exponent);
+    let suffixes = ['', 'k', 'm', 'b', 't'];
+    let result = value/power;
+    if (result % 1) result = result.toFixed(1);
+    return result + suffixes[exponent];
 }
