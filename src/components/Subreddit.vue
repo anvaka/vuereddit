@@ -16,8 +16,8 @@
     <div v-if='!loading && details && !details.error' class='details-container'>
       <post v-for='child in details.result.data.children' :key='child.data.id' :vm='child.data'></post>
     </div>
-    <div v-if='!loading && details && details.error'>
-      <div class='error-message'>An error occurred while trying to fetch /r/{{name}}.</div>
+    <div v-if='!loading && details && details.error' class='error'>
+      <div class='message'>An error occurred while trying to fetch /r/{{name}}.</div>
       <pre>{{details.error}}</pre>
     </div>
   </div>
@@ -103,7 +103,7 @@ export default {
       this.loading = false;
     },
     updateAbout(response) {
-      this.about = response.result.data;
+      this.about = response && response.result.data;
     },
     updateStyle() {
       if (this.$el.clientWidth < 600) {
@@ -182,6 +182,15 @@ function getTimeFilterOptions() {
   }
   h3 {
     margin: 0;
+  }
+}
+.error {
+  color: #860e05;
+  margin: 8px;
+
+  pre {
+    overflow: scroll;
+    padding-bottom: 24px;
   }
 }
 .sort-label {

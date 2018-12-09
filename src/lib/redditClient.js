@@ -1,4 +1,4 @@
-import jsonpFetch from "./jsonpFetch";
+import fetch from "./fetch";
 
 export default function redditClient() {
   const endpoint = 'https://www.reddit.com/r/';
@@ -48,7 +48,7 @@ export default function redditClient() {
     }
 
 
-    return jsonpFetch(`${endpoint}${key}`).then(result => {
+    return fetch(`${endpoint}${key}`, {responseType: 'json'}).then(result => {
       const value = {
         error: null,
         result
@@ -63,6 +63,7 @@ export default function redditClient() {
       };
       cachedPosts.set(key, value)
       resolveAllPendingFor(key, /* resolve = */ false, value);
+      return value;
     });
   }
 
