@@ -1,7 +1,7 @@
 <template>
   <div class='subreddit' @scroll='updateVisibility'>
     <div class='title-area'>
-      <h3><a :href="subLink">/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
+      <h3 :title='description'><a :href="subLink">/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
     </div>
     <div class='controls'>
       <span class='sort-label'>SORT:</span>
@@ -38,6 +38,10 @@ export default {
     Post
   },
   computed: {
+    description() {
+      const {about} = this;
+      return (about && about.description) || '';
+    },
     canChooseTime() {
       return this.selectedSortOption === 'top' ||
           this.selectedSortOption === 'controversial';
