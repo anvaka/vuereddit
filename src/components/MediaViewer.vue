@@ -1,6 +1,6 @@
 <template>
 <div>
-  <a :href='vm.url' class='url'>{{vm.url}}</a>
+  <a :href='vm.url' class='url' target='_blank'>{{vm.url}}</a>
   <div ref='htmlHost'></div>
 </div>
 </template>
@@ -56,21 +56,16 @@ export default {
 
     updateSize() {
       const {htmlHost} = this.$refs;
-      const mediaHeight = this.vm.media_embed.height;
       const frame = htmlHost.querySelector('iframe');
       if (frame) {
         frame.style.width = '100%';
-        if (htmlHost.clientWidth < mediaHeight) {
-          frame.style.height = 'auto';
-        } else {
-          frame.style.height = '';
-        }
+        frame.removeAttribute('height')
       }
     },
 
     getDecodedMediaFrame() {
       if (this.decoded) return this.decoded;
-      this.decoded = he.decode(this.vm.media_embed.content);
+      this.decoded = he.decode(this.vm.media_embed.content).replace(/position:absolute;/, '')
       return this.decoded;
     }
   }

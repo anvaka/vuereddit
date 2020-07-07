@@ -1,7 +1,7 @@
 <template>
   <div class='post'>
     <div class='vote-count'>{{prettyScore}}</div>
-    <a class='post-content' :href='permalink'>
+    <a class='post-content' :href='permalink' target='_blank'>
       <div class='byline'>Posted by <a :href='authorLink' target='_blank'>/u/{{vm.author}}</a> {{postedTime}}</div>
       <div class='title'>{{vm.title}}</div>
 
@@ -9,7 +9,7 @@
 
       <div class='status-line'>
         <div class='vote-count small'>{{prettyScore}}</div>
-        <a :href='permalink' class='comments-count'>{{commentsCount}}</a>
+        <a :href='permalink' class='comments-count' target='_blank'>{{commentsCount}}</a>
       </div>
     </a>
   </div>

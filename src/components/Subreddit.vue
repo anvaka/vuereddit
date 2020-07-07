@@ -1,9 +1,9 @@
 <template>
   <div class='subreddit' @scroll='updateVisibility'>
     <div class='title-area'>
-      <h3 :title='description'><a :href="subLink">/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
+      <h3 :title='description'><a :href="subLink" target='_blank'>/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
     </div>
-    <div class='controls'>
+    <div class='controls' v-if='!showAgeWarning'>
       <span class='sort-label'>SORT:</span>
       <select v-model='selectedSortOption'>
         <option v-for='(sortOption, index) in sortOptions' :key='index' :value='sortOption.value'>{{sortOption.display}}</option>
@@ -13,7 +13,16 @@
       </select>
     </div>
     <div v-if='loading' class='loading'>Loading...</div>
-    <div v-if='!loading && details && !details.error' class='details-container'>
+    <div v-if='showAgeWarning' class='age-warning'>
+      <h2>You must be 18+ to view this community</h2>
+      <p>
+      You must be at least eighteen years old to view this content. 
+      Are you over eighteen and willing to see adult content?
+      </p>
+      <a href='https://www.reddit.com/' target='_blank'>No</a>
+      <a href='#' @click.prevent='confirmAge'>Yes</a>
+    </div>
+    <div v-if='canShowPosts' class='details-container'>
       <post v-for='child in details.result.data.children' :key='child.data.id' :vm='child.data'></post>
     </div>
     <div v-if='!loading && details && details.error' class='error'>
@@ -42,6 +51,16 @@ export default {
       const {about} = this;
       return (about && about.description) || '';
     },
+    canShowPosts() {
+      if (this.loading) return false;
+      if (this.over18 === true && !this.ageConfirmed) return false;
+
+      return this.details && !this.details.error;
+    },
+    showAgeWarning() {
+      if (this.loading) return false;
+      return (this.over18 === true && !this.ageConfirmed);
+    },
     canChooseTime() {
       return this.selectedSortOption === 'top' ||
           this.selectedSortOption === 'controversial';
@@ -63,10 +82,13 @@ export default {
     const timeFilterOptions = getTimeFilterOptions();
     return {
       about: null,
+      over18: null,
       loading: true,
       details: null,
       selectedSortOption: sortOptions[0].value,
       selectedTimeFilter: timeFilterOptions[1].value,
+      // we store age on window, to not use cookies (gone after refresh)
+      ageConfirmed: window.ageConfirmed || false,
       sortOptions,
       timeFilterOptions
     }
@@ -98,16 +120,28 @@ export default {
     },
     fetchAbout() {
       this.about = null;
+
       redditClient
         .fetchAbout(this.name)
         .then(this.updateAbout);
     },
+
     updateData(subredditDetails) {
       this.details = subredditDetails;
-      this.loading = false;
+      if (this.about) {
+        this.loading = false;
+      }
     },
     updateAbout(response) {
       this.about = response && response.result.data;
+      this.over18 = this.about.over18;
+      if (this.details) {
+        this.loading = false;
+      }
+    },
+    confirmAge() {
+      window.ageConfirmed = true;
+      this.ageConfirmed = true;
     },
     updateStyle() {
       if (this.$el.clientWidth < 600) {
@@ -223,6 +257,14 @@ function getTimeFilterOptions() {
 }
 .loading {
   margin-left: 8px;
+}
+
+.age-warning {
+  text-align: center;
+   a {
+     display: inline-block;
+     margin: 8px;
+   }
 }
 </style>
 
