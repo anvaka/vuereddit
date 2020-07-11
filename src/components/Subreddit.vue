@@ -49,7 +49,7 @@ export default {
   computed: {
     description() {
       const {about} = this;
-      return (about && about.description) || '';
+      return (about && about.public_description) || '';
     },
     canShowPosts() {
       if (this.loading) return false;
