@@ -133,8 +133,8 @@ export default {
       }
     },
     updateAbout(response) {
-      this.about = response && response.result.data;
-      this.over18 = this.about.over18;
+      this.about = response && response.result && response.result.data;
+      this.over18 = this.about && this.about.over18;
       if (this.details) {
         this.loading = false;
       }

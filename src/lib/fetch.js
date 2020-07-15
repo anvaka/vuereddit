@@ -35,6 +35,10 @@ export default function request(url, options) {
 
     function transferComplete() {
       if (req.status !== 200) {
+        if (req.status === 404 && req.response && req.response.reason === 'banned') {
+          reject('This community has been banned');
+          return;
+        }
         reject(`Unexpected status code ${req.status} when calling ${url}`);
         return;
       }
