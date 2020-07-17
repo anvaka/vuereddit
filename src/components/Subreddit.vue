@@ -3,7 +3,7 @@
     <div class='title-area'>
       <h3 :title='description'><a :href="subLink" target='_blank'>/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
     </div>
-    <div class='controls' v-if='!showAgeWarning'>
+    <div class='controls' v-if='canShowPosts'>
       <span class='sort-label'>SORT:</span>
       <select v-model='selectedSortOption'>
         <option v-for='(sortOption, index) in sortOptions' :key='index' :value='sortOption.value'>{{sortOption.display}}</option>
@@ -153,6 +153,8 @@ export default {
   },
   watch: {
     name() {
+      this.about = null;
+      this.details = null;
       this.updateStyle();
       this.fetchCurrent();
       this.fetchAbout();

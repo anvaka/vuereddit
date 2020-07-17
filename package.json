@@ -9,6 +9,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "he": "^1.2.0",
     "javascript-time-ago": "^2.0.8",
     "vue": "^2.6.11"
   },

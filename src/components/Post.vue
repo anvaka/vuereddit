@@ -3,7 +3,7 @@
     <div class='vote-count'>{{prettyScore}}</div>
     <a class='post-content' :href='permalink' target='_blank'>
       <div class='byline'>Posted by <a :href='authorLink' target='_blank'>/u/{{vm.author}}</a> {{postedTime}}</div>
-      <div class='title'>{{vm.title}}</div>
+      <div class='title'>{{decodedTitle}}</div>
 
       <component :is='cardViewer' :vm='vm'></component>
 
@@ -22,6 +22,8 @@ import SelfViewer from './SelfViewer';
 import MediaViewer from './MediaViewer';
 import abbreviateNumber from '../lib/abbreviateNumber.js';
 
+const he = require("he");
+
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
 TimeAgo.addLocale(en)
@@ -38,6 +40,11 @@ export default {
       if (vm.media_embed && vm.media_embed.content) return MediaViewer;
 
       return LinkViewer;
+    },
+    decodedTitle() {
+      let title = this.vm.title;
+      if (!title) return '';
+      return he.decode(title);
     },
     postedTime() {
       const date = new Date(this.vm.created_utc * 1000);
