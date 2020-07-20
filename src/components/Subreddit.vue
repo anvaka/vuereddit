@@ -268,6 +268,9 @@ function getTimeFilterOptions() {
      margin: 8px;
    }
 }
+.reddit-video {
+  width: 100%;
+}
 </style>
 
 

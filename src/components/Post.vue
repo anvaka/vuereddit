@@ -20,6 +20,8 @@ import LinkViewer from './LinkViewer';
 import ImageViewer from './ImageViewer';
 import SelfViewer from './SelfViewer';
 import MediaViewer from './MediaViewer';
+import RedditVideoViewer from './RedditVideoViewer';
+import ImgurVideoViewer from './ImgurVideoViewer';
 import abbreviateNumber from '../lib/abbreviateNumber.js';
 
 const he = require("he");
@@ -38,6 +40,12 @@ export default {
       if (isImage(vm.url)) return ImageViewer;
       if (vm.is_self) return SelfViewer;
       if (vm.media_embed && vm.media_embed.content) return MediaViewer;
+      if (vm.media && vm.media.reddit_video && 
+          vm.media.reddit_video.dash_url) return RedditVideoViewer;
+      if (vm.preview && vm.preview.reddit_video_preview &&
+          vm.preview.reddit_video_preview.dash_url) return RedditVideoViewer;
+      if (vm.url.match(/imgur.com\/(.+)\.gifv/)) return ImgurVideoViewer;
+      // if (vm.preview && vm.preview.reddit_video_preview) return RedditVideoViewer;
 
       return LinkViewer;
     },
