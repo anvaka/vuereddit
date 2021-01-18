@@ -37,7 +37,7 @@ export default {
 .right-aligned {
   position: absolute;
   right: 0;
-  width: 300px;
+  width: 400px;
   top: 0;
   bottom: 0;
 }

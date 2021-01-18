@@ -1,10 +1,25 @@
 <template>
   <div class='subreddit' @scroll='updateVisibility'>
-    <div class='title-area'>
-      <h3 :title='description'><a :href="subLink" target='_blank'>/r/{{name}}</a><span v-if='about' class='subscribers'> {{subscribersCount}} subscribers; {{activeCount}} online</span></h3>
+    <div class='background-area'>
+      <a :href="subLink" target='_blank' >
+        <div class='background-image' :style='backgroundStyle'></div>
+      </a>
+      <div class='background-content'>
+        <a :href="subLink" target='_blank' class='background-reddit-icon'>
+          <img v-if='hasIcon' :src='image.icon' class='community-icon'>
+          <svg v-if='!loading && !hasIcon' class='community-icon' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+          </svg>
+        </a>
+        <div class='titles'  v-if='!loading && !showAgeWarning'>
+          <h2 :title='title'>{{title}}</h2>
+          <span v-if='about' class='subscribers'> {{subscribersCount}} members; {{activeCount}} online</span>
+          <h3 :title='description' v-html='description'></h3>
+        </div>
+      </div>
     </div>
     <div class='controls' v-if='canShowPosts'>
-      <span class='sort-label'>SORT:</span>
+      <span class='sort-label'>Sort posts by:</span>
       <select v-model='selectedSortOption'>
         <option v-for='(sortOption, index) in sortOptions' :key='index' :value='sortOption.value'>{{sortOption.display}}</option>
       </select>
@@ -39,6 +54,7 @@ import abbreviateNumber from '../lib/abbreviateNumber';
 import Post from './Post';
 
 const redditClient = makeRedditClient();
+const he = require("he");
 
 export default {
   name: 'Subreddit',
@@ -49,7 +65,15 @@ export default {
   computed: {
     description() {
       const {about} = this;
-      return (about && about.public_description) || '';
+      const html = about && about.public_description_html;
+      if (html) {
+        return he.decode(html);
+      }
+      return '';
+    },
+    title() {
+      const {about} = this;
+      return (about && about.title) || this.name;
     },
     canShowPosts() {
       if (this.loading) return false;
@@ -60,6 +84,18 @@ export default {
     showAgeWarning() {
       if (this.loading) return false;
       return (this.over18 === true && !this.ageConfirmed);
+    },
+    backgroundStyle() {
+      let keyColor = this.about && this.about.banner_background_color || '';
+      let imgPart = (this.image && this.image.banner && !this.showAgeWarning && !this.loading) ? 
+          `url(${this.image.banner}) no-repeat center / cover;background-position:center top; height: 192px;`
+            : ';height: 86px;';
+      return `background:${keyColor} ${imgPart}`
+    },
+    hasIcon() {
+      if (this.loading) return false;
+      if (this.showAgeWarning) return false;
+      return this.image && this.image.icon;
     },
     canChooseTime() {
       return this.selectedSortOption === 'top' ||
@@ -85,6 +121,7 @@ export default {
       over18: null,
       loading: true,
       details: null,
+      image: null,
       selectedSortOption: sortOptions[0].value,
       selectedTimeFilter: timeFilterOptions[1].value,
       // we store age on window, to not use cookies (gone after refresh)
@@ -133,11 +170,22 @@ export default {
       }
     },
     updateAbout(response) {
-      this.about = response && response.result && response.result.data;
+      let data = response && response.result && response.result.data;
+      this.about = data;
       this.over18 = this.about && this.about.over18;
       if (this.details) {
         this.loading = false;
       }
+      let image = null;
+      let icon = data.icon_img || data.community_icon;
+      if (icon) {
+        let banner = data.banner_img || data.banner_background_image;
+        image = {
+          icon: icon.split('?')[0],
+          banner: banner ? banner.split('?')[0] : null
+        }
+      }
+      this.image = image;
     },
     confirmAge() {
       window.ageConfirmed = true;
@@ -270,6 +318,47 @@ function getTimeFilterOptions() {
 }
 .reddit-video {
   width: 100%;
+}
+.background-image {
+  display: block;
+  min-width: 260px;
+  padding: 8px 16px;
+}
+.background-area {
+  h2, h3 {
+    margin: 0;
+  }
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 32px;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18px;
+  }
+  .community-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 100%;
+    margin: 8px;
+    border: 4px solid #fff;
+  }
+  .titles {
+    // flex: 1;
+    margin: 8px;
+   p {
+     margin: 8px 0;
+   }
+  }
+  .background-reddit-icon {
+    margin-top: -24px;
+    float: right;
+    img {
+      background-color: white;
+    }
+  }
 }
 </style>
 

@@ -1,6 +1,5 @@
 <template>
   <div class='post'>
-    <div class='vote-count'>{{prettyScore}}</div>
     <a class='post-content' :href='permalink' target='_blank'>
       <div class='byline'>Posted by <a :href='authorLink' target='_blank'>/u/{{vm.author}}</a> {{postedTime}}</div>
       <div class='title'>{{decodedTitle}}</div>
