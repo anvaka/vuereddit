@@ -1,10 +1,13 @@
 <template>
-<video controls class='reddit-video'>
+<video controls class='reddit-video' ref="video">
   <source :src="dash" type="application/dash+xml">
   <source :src="fallback" type="video/mp4">
 </video>
 </template>
 <script>
+/* eslint-disable no-console */
+// import dashjs from 'dashjs';
+
 export default {
   name: 'RedditVideoViewer',
   props: ['vm'],
@@ -14,7 +17,18 @@ export default {
     },
     fallback() {
       return this.getVideoSource().fallback_url;
+    },
+    audio() {
+      let url = this.getVideoSource().fallback_url;
+      let audioUrl = url.replace(/\/DASH_\d+\.mp4/, '\\DASH_audio.mp4');
+      return audioUrl;
     }
+  },
+  mounted() {
+    // unfortunately - cannot use it as dash playlist is not CORS enabled
+    // let dashUrl = this.dash;
+    // let player = dashjs.MediaPlayer().create();
+    // player.initialize(this.$refs.video, dashUrl, true)
   },
   methods: {
     getVideoSource() {
