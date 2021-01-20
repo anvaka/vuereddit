@@ -7,14 +7,14 @@
       <div class='background-content'>
         <a :href="subLink" target='_blank' class='background-reddit-icon'>
           <img v-if='hasIcon' :src='image.icon' class='community-icon'>
-          <svg v-if='!loading && !hasIcon' class='community-icon' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg v-if='!newSubredditLoading && !hasIcon' class='community-icon' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
           </svg>
         </a>
-        <div class='titles'  v-if='!loading && !showAgeWarning'>
+        <div class='titles'  v-if='!newSubredditLoading && !showAgeWarning'>
           <h2 :title='title'>{{title}}</h2>
           <span v-if='about' class='subscribers'> {{subscribersCount}} members; {{activeCount}} online</span>
-          <h3 :title='description' v-html='description'></h3>
+          <h3 v-html='description'></h3>
         </div>
       </div>
     </div>
@@ -73,7 +73,11 @@ export default {
     },
     title() {
       const {about} = this;
-      return (about && about.title) || this.name;
+      const html = (about && about.title) || this.name;
+      if (html) {
+        return he.decode(html);
+      }
+      return this.name;
     },
     canShowPosts() {
       if (this.loading) return false;
@@ -87,13 +91,14 @@ export default {
     },
     backgroundStyle() {
       let keyColor = this.about && this.about.banner_background_color || '';
-      let imgPart = (this.image && this.image.banner && !this.showAgeWarning && !this.loading) ? 
+      let imgPart = (this.image && this.image.banner && 
+      !(this.showAgeWarning || (this.loading && !this.partialReload))) ? 
           `url(${this.image.banner}) no-repeat center / cover;background-position:center top; height: 192px;`
             : ';height: 86px;';
       return `background:${keyColor} ${imgPart}`
     },
     hasIcon() {
-      if (this.loading) return false;
+      if (this.loading && !this.partialReload) return false;
       if (this.showAgeWarning) return false;
       return this.image && this.image.icon;
     },
@@ -111,6 +116,9 @@ export default {
     },
     subLink() {
       return 'https://reddit.com/r/' + this.name;
+    },
+    newSubredditLoading() {
+      return this.loading && !this.partialReload;
     }
   },
   data() {
@@ -122,6 +130,7 @@ export default {
       loading: true,
       details: null,
       image: null,
+      partialReload: false,
       selectedSortOption: sortOptions[0].value,
       selectedTimeFilter: timeFilterOptions[1].value,
       // we store age on window, to not use cookies (gone after refresh)
@@ -147,8 +156,9 @@ export default {
     updateVisibility() {
       eventHub.$emit('scroll', this.$el.scrollTop, this.$el.clientHeight);
     },
-    fetchCurrent() {
+    fetchCurrent(partialReload) {
       this.loading = true;
+      this.partialReload = partialReload;
       let timeFilter = this.canChooseTime ? this.selectedTimeFilter : undefined;
 
       redditClient
@@ -167,6 +177,9 @@ export default {
       this.details = subredditDetails;
       if (this.about) {
         this.loading = false;
+      }
+      if (this.details && this.details.error) {
+        this.image = null;
       }
     },
     updateAbout(response) {
@@ -208,10 +221,10 @@ export default {
       this.fetchAbout();
     },
     selectedSortOption() {
-      this.fetchCurrent();
+      this.fetchCurrent(true);
     },
     selectedTimeFilter() {
-      this.fetchCurrent();
+      this.fetchCurrent(true);
     }
   }
 }
