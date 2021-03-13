@@ -16,6 +16,7 @@
           <span v-if='about' class='subscribers'> {{subscribersCount}} members; {{activeCount}} online</span>
           <h3 v-html='description'></h3>
         </div>
+        <slot name='after-title' v-if='!loading'></slot>
       </div>
     </div>
     <div class='controls' v-if='canShowPosts'>
