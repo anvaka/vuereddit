@@ -42,8 +42,19 @@
       <post v-for='child in details.result.data.children' :key='child.data.id' :vm='child.data'></post>
     </div>
     <div v-if='!loading && details && details.error' class='error'>
-      <div class='message'>An error occurred while trying to fetch /r/{{name}}.</div>
+      <h3>Cannot read /r/{{name}}</h3>
+      <p>Things to try and check:</p>
+      <ul>
+        <li>Do you have a network connection?</li>
+        <li v-if='isFirefox'>
+          If you are using Firefox in private mode - disable <a href='https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Privacy/Tracking_Protection' target="_blank">tracking protection</a>.
+        </li>
+        <li>If you are using an ad blocker (uBlock, AdBlock, etc.) - pause it and see if it helps.</li>
+        <li>If you still see an issue - <a href='https://twitter.com/anvaka'>ping me</a>.</li>
+      </ul>
+      <p>Error code:</p>
       <pre>{{details.error}}</pre>
+      <a href='#' @click.prevent='reloadAll'>Click to retry...</a>
     </div>
   </div>
 </template>
@@ -136,6 +147,7 @@ export default {
       selectedTimeFilter: timeFilterOptions[1].value,
       // we store age on window, to not use cookies (gone after refresh)
       ageConfirmed: window.ageConfirmed || false,
+      isFirefox: window && window.navigator.userAgent.match(/Firefox/i),
       sortOptions,
       timeFilterOptions
     }
@@ -191,7 +203,7 @@ export default {
         this.loading = false;
       }
       let image = null;
-      let icon = data.icon_img || data.community_icon;
+      let icon = data && (data.icon_img || data.community_icon);
       if (icon) {
         let banner = data.banner_img || data.banner_background_image;
         image = {
@@ -211,15 +223,18 @@ export default {
       } else {
         this.$el.classList.remove('small-screen');
       }
-    }
-  },
-  watch: {
-    name() {
+    },
+    reloadAll() {
       this.about = null;
       this.details = null;
       this.updateStyle();
       this.fetchCurrent();
       this.fetchAbout();
+    }
+  },
+  watch: {
+    name() {
+      this.reloadAll()
     },
     selectedSortOption() {
       this.fetchCurrent(true);
@@ -287,9 +302,11 @@ function getTimeFilterOptions() {
   }
 }
 .error {
-  color: #860e05;
   margin: 8px;
 
+  h3 {
+    color: #860e05;
+  }
   pre {
     overflow: scroll;
     padding-bottom: 24px;

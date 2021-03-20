@@ -61,7 +61,8 @@ export default function redditClient() {
         error,
         result: null
       };
-      cachedPosts.set(key, value)
+      // We don't cache errors, so that we can retry them.
+      // cachedPosts.set(key, value)
       resolveAllPendingFor(key, /* resolve = */ false, value);
       return value;
     });
