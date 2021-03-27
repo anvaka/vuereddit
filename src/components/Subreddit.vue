@@ -35,7 +35,7 @@
       You must be at least eighteen years old to view this content. 
       Are you over eighteen and willing to see adult content?
       </p>
-      <a href='https://www.reddit.com/' target='_blank'>No</a>
+      <a href='https://www.reddit.com/' target='_blank' @click='declineAge'>No</a>
       <a href='#' @click.prevent='confirmAge'>Yes</a>
     </div>
     <div v-if='canShowPosts' class='details-container'>
@@ -212,6 +212,9 @@ export default {
         }
       }
       this.image = image;
+    },
+    declineAge(e) {
+      this.$emit('declineAge', e);
     },
     confirmAge() {
       window.ageConfirmed = true;
