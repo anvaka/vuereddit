@@ -67,13 +67,31 @@ import Post from './Post';
 
 const redditClient = makeRedditClient();
 const he = require("he");
+const allSortOptions = getSortOptions();
+const allTimeOptions = getTimeFilterOptions();
 
 export default {
   name: 'Subreddit',
-  props: ['name', 'align', 'width'],
-  components: {
-    Post
+  props: { 
+    name: String, 
+    sort: {
+      type: String,
+      default: allSortOptions[0].value,
+      validator(value) {
+        if (!value) return true;
+        return allSortOptions.findIndex(v => v.value === value) > -1;
+      }
+    },
+    time: {
+      type: String,
+      default: allTimeOptions[1].value,
+      validator(value) {
+        if (!value) return true;
+        return allTimeOptions.findIndex(v => v.value === value) > -1;
+      }
+    }
   },
+  components: { Post },
   computed: {
     description() {
       const {about} = this;
@@ -143,8 +161,8 @@ export default {
       details: null,
       image: null,
       partialReload: false,
-      selectedSortOption: sortOptions[0].value,
-      selectedTimeFilter: timeFilterOptions[1].value,
+      selectedSortOption: this.sort,
+      selectedTimeFilter: this.time,
       // we store age on window, to not use cookies (gone after refresh)
       ageConfirmed: window.ageConfirmed || false,
       isFirefox: window && window.navigator.userAgent.match(/Firefox/i),
@@ -172,7 +190,7 @@ export default {
     fetchCurrent(partialReload) {
       this.loading = true;
       this.partialReload = partialReload;
-      let timeFilter = this.canChooseTime ? this.selectedTimeFilter : undefined;
+      const timeFilter = this.canChooseTime ? this.selectedTimeFilter : undefined;
 
       redditClient
         .fetchPosts(this.name, this.selectedSortOption, timeFilter)
@@ -219,6 +237,7 @@ export default {
     confirmAge() {
       window.ageConfirmed = true;
       this.ageConfirmed = true;
+      this.$emit('confirmAge');
     },
     updateStyle() {
       if (this.$el.clientWidth < 600) {
@@ -239,10 +258,12 @@ export default {
     name() {
       this.reloadAll()
     },
-    selectedSortOption() {
+    selectedSortOption(newValue) {
+      this.$emit('sortChanged', newValue);
       this.fetchCurrent(true);
     },
-    selectedTimeFilter() {
+    selectedTimeFilter(newValue) {
+      this.$emit('timeChanged', newValue);
       this.fetchCurrent(true);
     }
   }

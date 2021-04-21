@@ -47,7 +47,6 @@ export default function redditClient() {
       return alsoResolve;
     }
 
-
     return fetch(`${endpoint}${key}`, {responseType: 'json'}).then(result => {
       const value = {
         error: null,
