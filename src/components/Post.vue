@@ -44,7 +44,6 @@ export default {
       if (vm.preview && vm.preview.reddit_video_preview &&
           vm.preview.reddit_video_preview.dash_url) return RedditVideoViewer;
       if (vm.url.match(/imgur.com\/(.+)\.gifv/)) return ImgurVideoViewer;
-      // if (vm.preview && vm.preview.reddit_video_preview) return RedditVideoViewer;
 
       return LinkViewer;
     },

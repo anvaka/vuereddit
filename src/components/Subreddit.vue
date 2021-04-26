@@ -1,5 +1,5 @@
 <template>
-  <div class='subreddit' @scroll='updateVisibility'>
+  <div class='subreddit'>
     <div class='background-area'>
       <a :href="subLink" target='_blank' >
         <div class='background-image' :style='backgroundStyle'></div>
@@ -39,9 +39,9 @@
       <a href='#' @click.prevent='confirmAge'>Yes</a>
     </div>
     <div v-if='canShowPosts' class='details-container'>
-      <post v-for='child in details.result.data.children' :key='child.data.id' :vm='child.data'></post>
+      <post v-for='child in posts' :key='child.id' :vm='child'></post>
     </div>
-    <div v-if='!loading && details && details.error' class='error'>
+    <div v-if='!loading && error' class='error'>
       <h3>Cannot read /r/{{name}}</h3>
       <p>Things to try and check:</p>
       <ul>
@@ -53,14 +53,14 @@
         <li>If you still see an issue - <a href='https://twitter.com/anvaka'>ping me</a>.</li>
       </ul>
       <p>Error code:</p>
-      <pre>{{details.error}}</pre>
+      <pre>{{error}}</pre>
       <a href='#' @click.prevent='reloadAll'>Click to retry...</a>
     </div>
   </div>
 </template>
 <script>
+
 import makeRedditClient from '../lib/redditClient';
-import eventHub from '../lib/eventHub.js';
 import abbreviateNumber from '../lib/abbreviateNumber';
 
 import Post from './Post';
@@ -113,7 +113,7 @@ export default {
       if (this.loading) return false;
       if (this.over18 === true && !this.ageConfirmed) return false;
 
-      return this.details && !this.details.error;
+      return this.posts && !this.error;
     },
     showAgeWarning() {
       if (this.loading) return false;
@@ -158,7 +158,8 @@ export default {
       about: null,
       over18: null,
       loading: true,
-      details: null,
+      error: null,
+      posts: null,
       image: null,
       partialReload: false,
       selectedSortOption: this.sort,
@@ -167,7 +168,8 @@ export default {
       ageConfirmed: window.ageConfirmed || false,
       isFirefox: window && window.navigator.userAgent.match(/Firefox/i),
       sortOptions,
-      timeFilterOptions
+      timeFilterOptions,
+      destroyed: false
     }
   },
   mounted() {
@@ -177,15 +179,13 @@ export default {
     window.addEventListener('resize', this.updateResize);
   },
   beforeDestroy() {
+    // TODO: should probably kill all outstanding requests!
+    this.destroyed = true;
     window.removeEventListener('resize', this.updateResize);
   },
   methods: {
     updateResize() {
-      eventHub.$emit('resize', this.$el.scrollTop, this.$el.clientHeight);
       this.updateStyle();
-    },
-    updateVisibility() {
-      eventHub.$emit('scroll', this.$el.scrollTop, this.$el.clientHeight);
     },
     fetchCurrent(partialReload) {
       this.loading = true;
@@ -205,19 +205,32 @@ export default {
     },
 
     updateData(subredditDetails) {
-      this.details = subredditDetails;
+      if (this.destroyed) {
+        // oh well..
+        return;
+      }
+      this.error = subredditDetails.error;
+      if (!subredditDetails.error) {
+        this.posts = subredditDetails.result.data.children.map(child => {
+          return extractSubsetOfUsedFields(child.data);
+        });
+      }
       if (this.about) {
         this.loading = false;
       }
-      if (this.details && this.details.error) {
+      if (this.posts && this.error) {
         this.image = null;
       }
     },
     updateAbout(response) {
+      if (this.destroyed) {
+        // oh well..
+        return;
+      }
       let data = response && response.result && response.result.data;
-      this.about = data;
+      this.about = extractAbout(data);
       this.over18 = this.about && this.about.over18;
-      if (this.details) {
+      if (this.posts) {
         this.loading = false;
       }
       let image = null;
@@ -248,7 +261,8 @@ export default {
     },
     reloadAll() {
       this.about = null;
-      this.details = null;
+      this.posts = null;
+      this.error = null;
       this.updateStyle();
       this.fetchCurrent();
       this.fetchAbout();
@@ -308,6 +322,34 @@ function getTimeFilterOptions() {
       value: 'all',
       display: 'Of All Time'
     }];
+}
+
+function extractSubsetOfUsedFields(vm) {
+  return Object.freeze({
+    url: vm.url,
+    is_self: vm.is_self,
+    media_embed: vm.media_embed,
+    media: vm.media,
+    preview: vm.preview,
+    title: vm.title,
+    created_utc: vm.created_utc,
+    score: vm.score,
+    author: vm.author,
+    permalink: vm.permalink,
+    num_comments: vm.num_comments
+  });
+}
+
+function extractAbout(about) {
+  if (!about) return about;
+  return Object.freeze({
+    public_description_html: about.public_description_html,
+    title: about.title,
+    banner_background_color: about.banner_background_color,
+    subscribers: about.subscribers,
+    active_user_count: about.active_user_count,
+    over18: about.over18
+  })
 }
 </script>
 <style lang="stylus">

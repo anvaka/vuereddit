@@ -10,12 +10,12 @@ export default function request(url, options) {
     var req = new XMLHttpRequest();
 
     if (typeof options.progress === 'function') {
-      req.addEventListener("progress", updateProgress, false);
+      req.addEventListener('progress', updateProgress, false);
     }
 
-    req.addEventListener("load", transferComplete, false);
-    req.addEventListener("error", transferFailed, false);
-    req.addEventListener("abort", transferCanceled, false);
+    req.addEventListener('load', transferComplete, false);
+    req.addEventListener('error', transferFailed, false);
+    req.addEventListener('abort', transferCanceled, false);
 
     req.open('GET', url);
     if (options.responseType) {

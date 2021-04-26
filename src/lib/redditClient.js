@@ -4,7 +4,7 @@ export default function redditClient() {
   const endpoint = 'https://www.reddit.com/r/';
 
   let cachedPosts = new Map(); // from reddit name to fetch results
-  let pendingResolvers = new Map(); // requested subreddits
+  let pendingRequests = new Map();
 
   return {
     /**
@@ -27,48 +27,48 @@ export default function redditClient() {
     if (timeFilter) {
       key += '?t=' + timeFilter;
     }
+
+    let promise;
     const cachedResponse = cachedPosts.get(key);
     if (cachedResponse) {
-      return Promise.resolve(cachedResponse);
+      // if we have response in the cache - we give it right away
+      promise = Promise.resolve(cachedResponse);
     }
-    const pendingResponse = pendingResolvers.get(key);
-    if (pendingResponse) {
-      let actualResolve, actualReject;
-      const alsoResolve = new Promise((resolve, reject) => {
-        actualResolve = resolve;
-        actualReject = reject;
+    if (pendingRequests.has(key)) {
+      // This way already scheduled. We resolve it later.
+      promise = new Promise((resolve, reject) => {
+        pendingRequests.get(key).resolvers.push({resolve, reject});
+      })
+    } else {
+      pendingRequests.set(key, {
+        resolvers: []
       });
-
-      pendingResolvers.push({
-        resolve: actualResolve,
-        reject: actualReject,
-      });
-
-      return alsoResolve;
     }
 
-    return fetch(`${endpoint}${key}`, {responseType: 'json'}).then(result => {
-      const value = {
-        error: null,
-        result
-      };
-      cachedPosts.set(key, value)
-      resolveAllPendingFor(key, /* resolve = */ true, value);
-      return value;
-    }).catch(error => {
-      const value = {
-        error,
-        result: null
-      };
-      // We don't cache errors, so that we can retry them.
-      // cachedPosts.set(key, value)
-      resolveAllPendingFor(key, /* resolve = */ false, value);
-      return value;
-    });
+    if (!promise) {
+      // If we haven't figure out yet the promise, we have to fetch.
+      promise = fetch(`${endpoint}${key}`, {responseType: 'json'})
+        .then(result => {
+          const value = { error: null, result };
+          cachedPosts.set(key, value)
+          resolveAllPendingFor(key, /* resolve = */ true, value);
+          pendingRequests.delete(key);
+          return value;
+        }).catch(error => {
+          const value = { error, result: null };
+          // Note: We don't cache errors, so that we can retry them.
+          // Still resolve current request:
+          resolveAllPendingFor(key, /* resolve = */ false, value);
+          pendingRequests.delete(key);
+          return value;
+        });
+    }
+
+    return promise;
   }
 
   function resolveAllPendingFor(subredditName, resolve, result) {
-    const moreToResolve = pendingResolvers.get(subredditName);
+    const moreToResolve = pendingRequests.get(subredditName).resolvers;
     if (!moreToResolve) return;
     moreToResolve.forEach(promise => resolve ? promise.resolve(result) : promise.reject(result))
   }
