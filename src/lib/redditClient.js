@@ -33,8 +33,7 @@ export default function redditClient() {
     if (cachedResponse) {
       // if we have response in the cache - we give it right away
       promise = Promise.resolve(cachedResponse);
-    }
-    if (pendingRequests.has(key)) {
+    } else if (pendingRequests.has(key)) {
       // This way already scheduled. We resolve it later.
       promise = new Promise((resolve, reject) => {
         pendingRequests.get(key).resolvers.push({resolve, reject});

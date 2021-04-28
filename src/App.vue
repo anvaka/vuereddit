@@ -3,7 +3,7 @@
     <form action="" @submit.prevent="subredditName = inputModel">
       <input type="text" v-model='inputModel'>
     </form>
-    <subreddit :name='subredditName' class='right-aligned'></subreddit>
+    <subreddit :name='subredditName' class='right-aligned' :showFirst=10></subreddit>
     <subreddit name='javascript'></subreddit>
   </div>
 </template>

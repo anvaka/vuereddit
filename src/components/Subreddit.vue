@@ -82,6 +82,13 @@ export default {
         return allSortOptions.findIndex(v => v.value === value) > -1;
       }
     },
+    /**
+     * How many posts should we show by default.
+     */
+    showFirst: {
+      type: Number,
+      default: 30
+    },
     time: {
       type: String,
       default: allTimeOptions[1].value,
@@ -211,9 +218,28 @@ export default {
       }
       this.error = subredditDetails.error;
       if (!subredditDetails.error) {
-        this.posts = subredditDetails.result.data.children.map(child => {
+        let children = subredditDetails.result.data.children;
+        let {showFirst} = this;
+        let posts = children.slice(0, showFirst).map(child => {
           return extractSubsetOfUsedFields(child.data);
         });
+        let allLoaded = children.length < showFirst;
+        if (!allLoaded) {
+          posts.push({
+            scrollTracker: true,
+            list: this,
+            loadTheRest() {
+              if (allLoaded) return;
+              allLoaded = true;
+              // drop the tracker
+              posts.pop();
+              for (let i = showFirst; i < children.length; ++i) {
+                posts.push(extractSubsetOfUsedFields(children[i].data));
+              }
+            }
+          });
+        }
+        this.posts = posts;
       }
       if (this.about) {
         this.loading = false;

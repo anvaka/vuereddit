@@ -1,6 +1,6 @@
 <template>
   <div class='post'>
-    <a class='post-content' :href='permalink' target='_blank'>
+    <a class='post-content' :href='permalink' target='_blank' v-if='!vm.scrollTracker'>
       <div class='byline'>Posted by <a :href='authorLink' target='_blank'>/u/{{vm.author}}</a> {{postedTime}}</div>
       <div class='title'>{{decodedTitle}}</div>
 
@@ -11,6 +11,9 @@
         <a :href='permalink' class='comments-count' target='_blank'>{{commentsCount}}</a>
       </div>
     </a>
+    <div v-else>
+      <scroll-tracker :vm='vm'></scroll-tracker>
+    </div>
   </div>
 </template>
 
@@ -19,18 +22,21 @@ import LinkViewer from './LinkViewer';
 import ImageViewer from './ImageViewer';
 import SelfViewer from './SelfViewer';
 import MediaViewer from './MediaViewer';
+import ScrollTracker from './ScrollTracker';
 import RedditVideoViewer from './RedditVideoViewer';
 import ImgurVideoViewer from './ImgurVideoViewer';
 import abbreviateNumber from '../lib/abbreviateNumber.js';
 
 const he = require("he");
 
-import TimeAgo from 'javascript-time-ago'
-import en from 'javascript-time-ago/locale/en'
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
+
 TimeAgo.addLocale(en)
 const timeAgo = new TimeAgo('en-US')
 
 export default {
+  components: { ScrollTracker },
   name: 'Post',
   props: ['vm'],
   computed: {
