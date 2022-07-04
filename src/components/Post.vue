@@ -1,7 +1,7 @@
 <template>
   <div class='post'>
     <a class='post-content' :href='permalink' target='_blank' v-if='!vm.scrollTracker'>
-      <div class='byline'>Posted by <a :href='authorLink' target='_blank'>/u/{{vm.author}}</a> {{postedTime}}</div>
+      <div class='byline'>Posted by <a :href='authorLink' target='_blank'>/u/{{vm.author}}</a> {{postedTime}} in <a :href='subredditLink'>{{vm.subreddit}}</a></div>
       <div class='title'>{{decodedTitle}}</div>
 
       <component :is='cardViewer' :vm='vm'></component>
@@ -70,6 +70,9 @@ export default {
     },
     permalink() {
       return 'https://reddit.com' + this.vm.permalink;
+    },
+    subredditLink() {
+      return 'https://reddit.com/r/' + this.vm.subreddit;
     },
     commentsCount() {
       const count = this.vm.num_comments;

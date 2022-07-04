@@ -19,11 +19,17 @@ export default function redditClient() {
   };
 
   function fetchAbout(subredditName) {
-    return fetchPosts(subredditName, 'about');
+    let firstInMany = getAllInMultiView(subredditName)[0];
+    return fetchPosts(firstInMany, 'about');
+  }
+
+  function getAllInMultiView(subredditName) {
+    return subredditName.split('+').map(x => x.trim());
   }
 
   function fetchPosts(subredditName, suffix, timeFilter) {
-    let key = `${subredditName}/${suffix}.json`
+    const cleanName = getAllInMultiView(subredditName).join('+')
+    let key = `${cleanName}/${suffix}.json`
     if (timeFilter) {
       key += '?t=' + timeFilter;
     }

@@ -100,6 +100,9 @@ export default {
   },
   components: { Post },
   computed: {
+    isMultiView() {
+      return this.name && this.name.indexOf('+') > -1;
+    },
     description() {
       const {about} = this;
       const html = about && about.public_description_html;
@@ -110,7 +113,12 @@ export default {
     },
     title() {
       const {about} = this;
-      const html = (about && about.title) || this.name;
+      let html = (about && about.title) || this.name;
+      if (this.isMultiView) {
+        const otherCount = this.name.split('+').length - 1;
+        const suffix = otherCount === 1 ? 'other' : 'others';
+        html += ` (and ${otherCount} ${suffix})`
+      }
       if (html) {
         return he.decode(html);
       }
@@ -241,18 +249,21 @@ export default {
         }
         this.posts = posts;
       }
-      if (this.about) {
+
+      if (this.error || this.about) {
         this.loading = false;
       }
       if (this.posts && this.error) {
         this.image = null;
       }
     },
+
     updateAbout(response) {
       if (this.destroyed) {
         // oh well..
         return;
       }
+
       let data = response && response.result && response.result.data;
       this.about = extractAbout(data);
       this.over18 = this.about && this.about.over18;
@@ -362,7 +373,8 @@ function extractSubsetOfUsedFields(vm) {
     score: vm.score,
     author: vm.author,
     permalink: vm.permalink,
-    num_comments: vm.num_comments
+    num_comments: vm.num_comments,
+    subreddit: vm.subreddit,
   });
 }
 
