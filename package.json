@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --target lib --name vuereddit ./src/components/Subreddit.vue",
+    "build-demo": "vue-cli-service build",
     "start": "npm run serve",
     "lint": "vue-cli-service lint"
   },
