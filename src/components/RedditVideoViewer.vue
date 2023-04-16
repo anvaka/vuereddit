@@ -6,7 +6,7 @@
 </template>
 <script>
 /* eslint-disable no-console */
-// import dashjs from 'dashjs';
+import dashjs from 'dashjs';
 
 export default {
   name: 'RedditVideoViewer',
@@ -25,10 +25,9 @@ export default {
     }
   },
   mounted() {
-    // unfortunately - cannot use it as dash playlist is not CORS enabled
-    // let dashUrl = this.dash;
-    // let player = dashjs.MediaPlayer().create();
-    // player.initialize(this.$refs.video, dashUrl, true)
+    let dashUrl = this.dash;
+    let player = dashjs.MediaPlayer().create();
+    player.initialize(this.$refs.video, dashUrl, false)
   },
   methods: {
     getVideoSource() {
