@@ -18,45 +18,44 @@
 </template>
 
 <script>
-import LinkViewer from './LinkViewer';
-import ImageViewer from './ImageViewer';
-import SelfViewer from './SelfViewer';
-import MediaViewer from './MediaViewer';
-import ScrollTracker from './ScrollTracker';
-import RedditVideoViewer from './RedditVideoViewer';
-import ImgurVideoViewer from './ImgurVideoViewer';
+import LinkViewer from './LinkViewer.vue';
+import ImageViewer from './ImageViewer.vue';
+import SelfViewer from './SelfViewer.vue';
+import MediaViewer from './MediaViewer.vue';
+import ScrollTracker from './ScrollTracker.vue';
+import RedditVideoViewer from './RedditVideoViewer.vue';
+import ImgurVideoViewer from './ImgurVideoViewer.vue';
 import abbreviateNumber from '../lib/abbreviateNumber.js';
-
-const he = require("he");
+import he from 'he';
 
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
-TimeAgo.addLocale(en)
-const timeAgo = new TimeAgo('en-US')
+TimeAgo.addLocale(en);
+const timeAgo = new TimeAgo('en-US');
 
 export default {
   components: { ScrollTracker },
   name: 'Post',
-  props: ['vm'],
+  props: {
+    vm: {
+      type: Object,
+      required: true
+    }
+  },
   computed: {
     cardViewer() {
       const vm = this.vm;
-      if (isImage(vm.url)) return ImageViewer;
+      if (this.isImage(vm.url)) return ImageViewer;
       if (vm.is_self) return SelfViewer;
-      if (vm.media_embed && vm.media_embed.content) return MediaViewer;
-      if (vm.media && vm.media.reddit_video && 
-          vm.media.reddit_video.dash_url) return RedditVideoViewer;
-      if (vm.preview && vm.preview.reddit_video_preview &&
-          vm.preview.reddit_video_preview.dash_url) return RedditVideoViewer;
-      if (vm.url.match(/imgur.com\/(.+)\.gifv/)) return ImgurVideoViewer;
-
+      if (vm.media_embed?.content) return MediaViewer;
+      if (vm.media?.reddit_video?.dash_url) return RedditVideoViewer;
+      if (vm.preview?.reddit_video_preview?.dash_url) return RedditVideoViewer;
+      if (vm.url?.match(/imgur.com\/(.+)\.gifv/)) return ImgurVideoViewer;
       return LinkViewer;
     },
     decodedTitle() {
-      let title = this.vm.title;
-      if (!title) return '';
-      return he.decode(title);
+      return he.decode(this.vm.title || '');
     },
     postedTime() {
       const date = new Date(this.vm.created_utc * 1000);
@@ -66,13 +65,13 @@ export default {
       return abbreviateNumber(this.vm.score);
     },
     authorLink() {
-      return 'https://reddit.com/u/' + this.vm.author;
+      return `https://reddit.com/u/${this.vm.author}`;
     },
     permalink() {
-      return 'https://reddit.com' + this.vm.permalink;
+      return `https://reddit.com${this.vm.permalink}`;
     },
     subredditLink() {
-      return 'https://reddit.com/r/' + this.vm.subreddit;
+      return `https://reddit.com/r/${this.vm.subreddit}`;
     },
     commentsCount() {
       const count = this.vm.num_comments;
@@ -80,13 +79,15 @@ export default {
       if (count === 1) return '1 Comment';
       return `${abbreviateNumber(count)} Comments`;
     }
+  },
+  methods: {
+    isImage(url) {
+      return url?.match(/\.(png|jpg|jpeg|gif)\b/i);
+    }
   }
 }
-
-function isImage(url) {
-  return url && url.match(/\.(png|jpg|jpeg|gif)\b/i)
-}
 </script>
+
 <style lang="stylus">
 @import './variables.styl';
 
@@ -170,7 +171,6 @@ function isImage(url) {
 }
 
 .small-screen {
-  
   .post {
     margin: 0 0 16px 0;
     .vote-count {
@@ -183,5 +183,4 @@ function isImage(url) {
     }
   }
 }
-
 </style>

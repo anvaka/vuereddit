@@ -9,26 +9,26 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+import Subreddit from './components/Subreddit.vue'
 
-import Subreddit from './components/Subreddit'
-
-export default {
+export default defineComponent({
   name: 'App',
+  components: {
+    Subreddit
+  },
   data() {
     const subredditName = 'programming';
     return {
       subredditName,
       inputModel: subredditName,
     };
-  },
-
-  components: {
-    Subreddit
   }
-}
+})
 </script>
 
 <style>
+/* Styles remain unchanged */
 #app {
   width: 100%;
   height: 100%;

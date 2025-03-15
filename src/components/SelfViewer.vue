@@ -4,17 +4,22 @@
     <div class="read-more"></div>
   </div>
 </template>
+
 <script>
-const he = require("he");
+import he from 'he';
 
 export default {
   name: "SelfViewer",
-  props: ["vm"],
+  props: {
+    vm: {
+      type: Object,
+      required: true
+    }
+  },
   computed: {
     decodedHtml() {
       const html = this.vm.selftext_html;
-      if (!html) return "";
-      return he.decode(html);
+      return html ? he.decode(html) : "";
     }
   }
 };

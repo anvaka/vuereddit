@@ -11,7 +11,7 @@ export default {
     });
     this.intersectionObserver.observe(this.$el);
   },
-  beforeDestroy() {
+  beforeUnmount() { 
     this.intersectionObserver.disconnect();
   },
   methods: {

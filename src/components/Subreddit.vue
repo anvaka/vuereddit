@@ -1,22 +1,24 @@
 <template>
   <div class='subreddit'>
     <div class='background-area'>
-      <a :href="subLink" target='_blank' >
+      <a :href="subLink" target='_blank'>
         <div class='background-image' :style='backgroundStyle'></div>
       </a>
       <div class='background-content'>
         <a :href="subLink" target='_blank' class='background-reddit-icon'>
           <img v-if='hasIcon' :src='image.icon' class='community-icon'>
-          <svg v-if='!newSubredditLoading && !hasIcon' class='community-icon' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg v-else-if='!newSubredditLoading' class='community-icon' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
           </svg>
         </a>
-        <div class='titles'  v-if='!newSubredditLoading && !showAgeWarning'>
+        <div class='titles' v-if='!newSubredditLoading && !showAgeWarning'>
           <h2 :title='title'>{{title}}</h2>
           <span v-if='about' class='subscribers'> {{subscribersCount}} members; {{activeCount}} online</span>
           <h3 v-html='description'></h3>
         </div>
-        <slot name='after-title' v-if='!loading'></slot>
+        <template v-if='!loading'>
+          <slot name='after-title'></slot>
+        </template>
       </div>
     </div>
     <div class='controls' v-if='canShowPosts'>
@@ -32,8 +34,8 @@
     <div v-if='showAgeWarning' class='age-warning'>
       <h2>You must be 18+ to view this community</h2>
       <p>
-      You must be at least eighteen years old to view this content. 
-      Are you over eighteen and willing to see adult content?
+        You must be at least eighteen years old to view this content. 
+        Are you over eighteen and willing to see adult content?
       </p>
       <a href='https://www.reddit.com/' target='_blank' @click='declineAge'>No</a>
       <a href='#' @click.prevent='confirmAge'>Yes</a>
@@ -58,22 +60,24 @@
     </div>
   </div>
 </template>
+
 <script>
 
+import { defineComponent } from 'vue';
 import makeRedditClient from '../lib/redditClient';
 import abbreviateNumber from '../lib/abbreviateNumber';
-
-import Post from './Post';
+import Post from './Post.vue';
+import he from 'he';
 
 const redditClient = makeRedditClient();
-const he = require("he");
 const allSortOptions = getSortOptions();
 const allTimeOptions = getTimeFilterOptions();
 
-export default {
+export default defineComponent({
   name: 'Subreddit',
+  emits: ['declineAge', 'confirmAge', 'sortChanged', 'timeChanged'],
   props: { 
-    name: String, 
+    name: String,
     sort: {
       type: String,
       default: allSortOptions[0].value,
@@ -82,9 +86,6 @@ export default {
         return allSortOptions.findIndex(v => v.value === value) > -1;
       }
     },
-    /**
-     * How many posts should we show by default.
-     */
     showFirst: {
       type: Number,
       default: 30
@@ -174,14 +175,13 @@ export default {
       over18: null,
       loading: true,
       error: null,
-      posts: null,
+      posts: [],
       image: null,
       partialReload: false,
       selectedSortOption: this.sort,
       selectedTimeFilter: this.time,
-      // we store age on window, to not use cookies (gone after refresh)
       ageConfirmed: window.ageConfirmed || false,
-      isFirefox: window && window.navigator.userAgent.match(/Firefox/i),
+      isFirefox: window?.navigator?.userAgent?.match(/Firefox/i),
       sortOptions,
       timeFilterOptions,
       destroyed: false
@@ -193,8 +193,7 @@ export default {
     this.fetchAbout();
     window.addEventListener('resize', this.updateResize);
   },
-  beforeDestroy() {
-    // TODO: should probably kill all outstanding requests!
+  beforeUnmount() {
     this.destroyed = true;
     window.removeEventListener('resize', this.updateResize);
   },
@@ -233,6 +232,7 @@ export default {
         });
         let allLoaded = children.length < showFirst;
         if (!allLoaded) {
+          let self = this;
           posts.push({
             scrollTracker: true,
             list: this,
@@ -244,6 +244,7 @@ export default {
               for (let i = showFirst; i < children.length; ++i) {
                 posts.push(extractSubsetOfUsedFields(children[i].data));
               }
+              self.posts = [...posts];
             }
           });
         }
@@ -318,7 +319,7 @@ export default {
       this.fetchCurrent(true);
     }
   }
-}
+});
 
 function getSortOptions() {
   return [{
@@ -362,8 +363,9 @@ function getTimeFilterOptions() {
 }
 
 function extractSubsetOfUsedFields(vm) {
-  return Object.freeze({
+  return ({
     url: vm.url,
+    id: vm.id,
     is_self: vm.is_self,
     media_embed: vm.media_embed,
     media: vm.media,
